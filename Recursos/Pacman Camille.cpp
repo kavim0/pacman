@@ -97,15 +97,19 @@ void motordejuego(){
 	
 	int matrizjuego[20][30]; //declarar matriz juego
 	
-	OcultaCursor(); //oculta cursor
+	//OcultaCursor(); //oculta cursor
 	
 	cargarmapa1(matrizjuego); //declara mapa 1 y pasa mapa 1 a matriz juego
-		BITMAP *buffer = create_bitmap(960,660);
+	BITMAP *buffer = create_bitmap(960,660);
 
-	imprimirMapa(matrizjuego,buffer); //imprime matriz juego
-	movimientoPacman(matrizjuego);
+	do{
+		imprimirMapa(matrizjuego,buffer); //imprime matriz juego
+		blit(buffer,screen,0,0,0,0,960,660);
+	}while(true); //CICLO INFINITO
+
+	//movimientoPacman(matrizjuego);
 	
-	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
+	//spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	
 }
 
@@ -113,15 +117,21 @@ void imprimirMapa(int matrizjuego[20][30], BITMAP *buffer){
 	int i,e;
 	BITMAP *vectorMapa[15];
 	vectorMapa[0] = load_bitmap("CuerpoPacman_II.bmp",NULL);
-	
+	vectorMapa[1] = load_bitmap("Bloques_1.bmp",NULL);
 	for(i=0;i<20;i++){
 		for(e=0;e<30;e++){
-			if(matrizjuego[i][e] == 0){
-				draw_sprite(buffer,vectorMapa[0],e*30,i*30+35);
+			switch(matrizjuego[i][e]){
+				case 0:
+					draw_sprite(buffer,vectorMapa[0],e*30,i*30+35);
+				break;
+				case 1:
+					draw_sprite(buffer,vectorMapa[1],e*30,i*30+35);
+					break;
 			}
-			printf("%d ",matrizjuego[i][e]);
+		
+			//printf("%d ",matrizjuego[i][e]);
 		}
-		printf("\n");
+		//printf("\n");
 	}
 	
 }
