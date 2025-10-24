@@ -14,8 +14,9 @@ void motordejuego();
 void imprimirMapa(int matrizjuego[20][30], BITMAP *buffer);
 int movimientoPacman(int matrizjuego[][30], int posPacman[2]);
 void IFmove(int matrizjuego[][30], int tecla, int posPacman[2]);
-void spawnFruta(int matrizjuego[20][30]);
+void spawnFruta(int matrizjuego[][30]);
 void OcultaCursor();
+void clydeNaranja(int matrizjuego[][30]);
 
 /*0 -> PACMAN
 1 -> Bloque
@@ -95,7 +96,7 @@ void cargarmapa1(int matrizjuego[20][30]){
 
 void motordejuego(){
 	
-	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla; //declarar matriz juego
+	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla, clydeNarPos[2]; //declarar variables de juego
 	
 	//OcultaCursor(); //oculta cursor
 	
@@ -205,4 +206,61 @@ void spawnFruta(int matrizjuego[20][30]){
 			break;
 		}
 	}
+}
+
+void clydeNaranja(int matrizjuego[20][30],clydeNarPos[2],flag=0,random){
+	/*Fantasma Naranja:
+	-Es random
+	-No se puede comer los bloques, puntos, nada.
+	- Tiene que salir de su casita despues de un tiempo, siendo el 1ro.*/
+	while(flag!=1){
+		random = rand() % (4-1 + 1);
+		switch(random){
+		case 1:
+			if(matrizjuego[posPacman[0]-1][posPacman[1]] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[0]--;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+				flag++;
+			}
+		break;
+		case 2:
+			if(matrizjuego[posPacman[0]][posPacman[1]-1] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[1]--;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			}
+			else if(posPacman[1] == 0 && tecla == KEY_LEFT){//Verifico si está en el TELEPORT izquierdo
+				posPacman[1]=29;
+				matrizjuego[10][0]=4;
+				matrizjuego[10][29]=0;
+				printf("ejecucion",tecla);//debug{
+			}
+		break;
+		case KEY_DOWN:
+			if(matrizjuego[posPacman[0]+1][posPacman[1]] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[0]++;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			}
+		break;
+		case KEY_RIGHT:
+			if(matrizjuego[posPacman[0]][posPacman[1]+1] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[1]++;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+				}
+			else if(posPacman[1] == 29 && tecla == KEY_RIGHT){//Verifico si está en el TELEPORT derecho
+				posPacman[1]=0;
+				matrizjuego[10][29]=4;
+				matrizjuego[10][0]=0;
+				printf("ejecucion",tecla);//debug{
+				}
+		break;
+		}
+	}
+}
+
+void clydeNarExit(int matrizjuego[20][30], clydeNarPos[2];){
+	clydeNarPos[2]={9, 12};
 }
