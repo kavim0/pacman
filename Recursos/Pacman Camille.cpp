@@ -12,7 +12,7 @@ void init ();
 void cargarmapa1(int matrizjuego[][30]);
 void motordejuego();
 void imprimirMapa(int matrizjuego[20][30], BITMAP *buffer);
-void movimientoPacman(int matrizjuego[][30]);
+int movimientoPacman(int matrizjuego[][30], int posPacman[2]);
 void IFmove(int matrizjuego[][30], int tecla, int posPacman[2]);
 void spawnFruta(int matrizjuego[20][30]);
 void OcultaCursor();
@@ -95,7 +95,7 @@ void cargarmapa1(int matrizjuego[20][30]){
 
 void motordejuego(){
 	
-	int matrizjuego[20][30]; //declarar matriz juego
+	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla; //declarar matriz juego
 	
 	//OcultaCursor(); //oculta cursor
 	
@@ -104,9 +104,11 @@ void motordejuego(){
 	
 	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	do{
+		tecla = movimientoPacman(matrizjuego, posPacman);
+		clear(buffer);
 		imprimirMapa(matrizjuego,buffer); //imprime matriz juego
-		movimientoPacman(matrizjuego);
 		blit(buffer,screen,0,0,0,0,960,660);
+		printf("%d\n",tecla);//debug
 	}while(true); //CICLO INFINITO
 
 	//
@@ -134,36 +136,56 @@ void imprimirMapa(int matrizjuego[20][30], BITMAP *buffer){
 	
 }
 
-void movimientoPacman(int matrizjuego[20][30]){
-	int posPacman[2]={14, 14};
-	//float
+int movimientoPacman(int matrizjuego[20][30], int posPacman[2]){
 	int tecla = readkey() >> 8;
 	IFmove(matrizjuego, tecla, posPacman); //comprueba la tecla de movimiento del usuario
+	return tecla;
 }
 
-void IFmove(int matrizjuego[20][30],int tecla, int posPacman[2]){
+void IFmove(int matrizjuego[20][30],int tecla,int posPacman[2]){
 	switch(tecla){
 		case KEY_UP:
-			matrizjuego[posPacman[0]][posPacman[1]] = 2;
-			posPacman[0]--;
-			matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			break;
+			if(matrizjuego[posPacman[0]-1][posPacman[1]] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[0]--;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			}
+		break;
 		case KEY_LEFT:
-			matrizjuego[posPacman[0]][posPacman[1]] = 2;
-			posPacman[1]--;
-			matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			break;
+			if(matrizjuego[posPacman[0]][posPacman[1]-1] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[1]--;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			}
+			else if(posPacman[1] == 0 && tecla == KEY_LEFT){//Verifico si está en el TELEPORT izquierdo
+				posPacman[1]=29;
+				matrizjuego[10][0]=4;
+				matrizjuego[10][29]=0;
+				printf("ejecucion",tecla);//debug{
+			}
+		break;
 		case KEY_DOWN:
-			matrizjuego[posPacman[0]][posPacman[1]] = 2;
-			posPacman[0]++;
-			matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			break;
+			if(matrizjuego[posPacman[0]+1][posPacman[1]] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[0]++;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			}
+		break;
 		case KEY_RIGHT:
-			matrizjuego[posPacman[0]][posPacman[1]] = 2;
-			posPacman[1]++;
-			matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			break;
+			if(matrizjuego[posPacman[0]][posPacman[1]+1] != 1){
+				matrizjuego[posPacman[0]][posPacman[1]] = 4;
+				posPacman[1]++;
+				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+				}
+			else if(posPacman[1] == 29 && tecla == KEY_RIGHT){//Verifico si está en el TELEPORT derecho
+				posPacman[1]=0;
+				matrizjuego[10][29]=4;
+				matrizjuego[10][0]=0;
+				printf("ejecucion",tecla);//debug{
+				}
+		break;
 	}
+	printf("%d,%d\n",posPacman[0],posPacman[1]);//debug
 }
 
 /*void OcultaCursor(){ // Oculta la flechita el cuadro que parpadea en el ejecutable y se pone antes de la generacion de cualquier cosa.
