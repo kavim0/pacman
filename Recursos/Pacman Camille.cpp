@@ -16,7 +16,8 @@ int movimientoPacman(int matrizjuego[][30], int posPacman[2]);
 void IFmove(int matrizjuego[][30], int tecla, int posPacman[2]);
 void spawnFruta(int matrizjuego[][30]);
 void OcultaCursor();
-void clydeNaranja(int matrizjuego[][30]);
+int clydeNaranja(int matrizjuego[][30], int fantasmaPos[][2], int auxClyde);
+void fantasmaExit(int matrizjuego[][30], int fantasmaPos[][2], int fantasmaForExit);
 
 /*0 -> PACMAN
 1 -> Bloque
@@ -24,11 +25,11 @@ void clydeNaranja(int matrizjuego[][30]);
 3 -> Fruta
 4 -> Espacio libre
 5 -> punto grande 
-6 -> Blinky -> ROJO  -> PERSIGUE LOCAMENTE AL PACMAN 
-7 -> Inky -> AZULITO  -> SE MUEVE AL AZAR PERO MÁS LENTO
-8 -> Pinky -> ROSA ->PERSIGUE IGUAL PERO MÁS LENTO
-9 -> Clyde -> NARANJA -> SE MUEVE AL AZAR RAPIDO*/
-
+6 -> Blinky -> ROJO  -> PERSIGUE LOCAMENTE AL PACMAN 			--fantasmaPos[0][];
+7 -> Inky -> AZULITO  -> SE MUEVE AL AZAR PERO MÁS LENTO		--fantasmaPos[1][];
+8 -> Pinky -> ROSA ->PERSIGUE IGUAL PERO MÁS LENTO				--fantasmaPos[2][];
+9 -> Clyde -> NARANJA -> SE MUEVE AL AZAR RAPIDO				--fantasmaPos[3][];
+*/
 int main(){
 	srand(time(NULL)); //declarar random
 	init();
@@ -96,7 +97,7 @@ void cargarmapa1(int matrizjuego[20][30]){
 
 void motordejuego(){
 	
-	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla, clydeNarPos[2]; //declarar variables de juego
+	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla, fantasmaPos[4][2], fantasmaForExit=3, auxClyde=4; //declarar variables de juego
 	
 	//OcultaCursor(); //oculta cursor
 	
@@ -106,10 +107,12 @@ void motordejuego(){
 	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	do{
 		tecla = movimientoPacman(matrizjuego, posPacman);
+		fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
+		auxClyde = clydeNaranja(matrizjuego, fantasmaPos, auxClyde);
 		clear(buffer);
 		imprimirMapa(matrizjuego,buffer); //imprime matriz juego
+		printf("\nClyde: %d, %d\n",fantasmaPos[3][0],fantasmaPos[3][1]);
 		blit(buffer,screen,0,0,0,0,960,660);
-		printf("%d\n",tecla);//debug
 	}while(true); //CICLO INFINITO
 
 	//
@@ -208,59 +211,65 @@ void spawnFruta(int matrizjuego[20][30]){
 	}
 }
 
-void clydeNaranja(int matrizjuego[20][30],clydeNarPos[2],flag=0,random){
+int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 	/*Fantasma Naranja:
 	-Es random
 	-No se puede comer los bloques, puntos, nada.
-	- Tiene que salir de su casita despues de un tiempo, siendo el 1ro.*/
+	- Tiene que salir de su casa despues de un tiempo, siendo el 1ro.*/
+	int flag=0, random;
 	while(flag!=1){
-		random = rand() % (4-1 + 1);
+		random=3; //rand() % (4-1 + 1);
 		switch(random){
-		case 1:
-			if(matrizjuego[posPacman[0]-1][posPacman[1]] != 1){
-				matrizjuego[posPacman[0]][posPacman[1]] = 4;
-				posPacman[0]--;
-				matrizjuego[posPacman[0]][posPacman[1]] = 0;
-				flag++;
-			}
-		break;
-		case 2:
-			if(matrizjuego[posPacman[0]][posPacman[1]-1] != 1){
-				matrizjuego[posPacman[0]][posPacman[1]] = 4;
-				posPacman[1]--;
-				matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			}
-			else if(posPacman[1] == 0 && tecla == KEY_LEFT){//Verifico si está en el TELEPORT izquierdo
-				posPacman[1]=29;
-				matrizjuego[10][0]=4;
-				matrizjuego[10][29]=0;
-				printf("ejecucion",tecla);//debug{
-			}
-		break;
-		case KEY_DOWN:
-			if(matrizjuego[posPacman[0]+1][posPacman[1]] != 1){
-				matrizjuego[posPacman[0]][posPacman[1]] = 4;
-				posPacman[0]++;
-				matrizjuego[posPacman[0]][posPacman[1]] = 0;
-			}
-		break;
-		case KEY_RIGHT:
-			if(matrizjuego[posPacman[0]][posPacman[1]+1] != 1){
-				matrizjuego[posPacman[0]][posPacman[1]] = 4;
-				posPacman[1]++;
-				matrizjuego[posPacman[0]][posPacman[1]] = 0;
+			case 1:
+				if(matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]] != 1){
+					printf("ejecucion Clyde");
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
+					fantasmaPos[3][0]--; //arriba
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+					aux = matrizjuego[fantasmaPos[3][0]+1][fantasmaPos[3][1]];
+					flag++;
 				}
-			else if(posPacman[1] == 29 && tecla == KEY_RIGHT){//Verifico si está en el TELEPORT derecho
-				posPacman[1]=0;
-				matrizjuego[10][29]=4;
-				matrizjuego[10][0]=0;
-				printf("ejecucion",tecla);//debug{
+			break;
+			case 2:
+				if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] != 1){
+					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
+					fantasmaPos[3][1]--;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]+1];
+					flag++;
 				}
-		break;
+			break;
+			case 3:
+				if(matrizjuego[fantasmaPos[3][0]+1][fantasmaPos[3][1]] != 1){
+					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
+					fantasmaPos[3][0]++;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+					aux = matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]];
+					flag++;
+				}
+			break;
+			case 4:
+				if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]+1] != 1){
+					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
+					fantasmaPos[3][1]++;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] = aux;
+					flag++;
+				}
+			break;
 		}
+		return aux;
+
 	}
 }
 
-void clydeNarExit(int matrizjuego[20][30], clydeNarPos[2];){
-	clydeNarPos[2]={9, 12};
+void fantasmaExit(int matrizjuego[20][30], int fantasmaPos[4][2], int fantasmaForExit){
+	fantasmaPos[fantasmaForExit][0]=9;
+	fantasmaPos[fantasmaForExit][1]=12;
+	matrizjuego[fantasmaPos[fantasmaForExit][0]][fantasmaPos[fantasmaForExit][1]] = 9;
+	matrizjuego[10][14]=4;
 }
