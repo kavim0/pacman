@@ -8,7 +8,7 @@
 
 #define delayRefresh 0.3 //segundos;
 
-void init (); 
+void init ();
 void cargarmapa1(int matrizjuego[][30]);
 void motordejuego();
 void imprimirMapa(int matrizjuego[20][30], BITMAP *buffer);
@@ -18,6 +18,10 @@ void spawnFruta(int matrizjuego[][30]);
 void OcultaCursor();
 int clydeNaranja(int matrizjuego[][30], int fantasmaPos[][2], int auxClyde);
 void fantasmaExit(int matrizjuego[][30], int fantasmaPos[][2], int fantasmaForExit);
+int muerte(int matrizjuego[][30], int fantasmaPos[][2], int posPacman[2], int ticks);
+int muerteIF(int matrizjuego[][30], int fantasmaPos[][2], int posPacman[2], int fantasma, int ticks);
+void reinicio(int matrizjuego[][30], int fantasmaPos[][2], int posPacman[2]);
+void declararFantasmas(int fantasmaPos[][2]);
 
 /*0 -> PACMAN
 1 -> Bloque
@@ -97,22 +101,31 @@ void cargarmapa1(int matrizjuego[20][30]){
 
 void motordejuego(){
 	
-	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla, fantasmaPos[4][2], fantasmaForExit=3, auxClyde=4; //declarar variables de juego
-	
+	int matrizjuego[20][30], posPacman[2]={14, 14}, tecla, fantasmaPos[4][2], fantasmaForExit=3, auxClyde=2, ticks=0;; //declarar variables de juego
 	//OcultaCursor(); //oculta cursor
 	
 	cargarmapa1(matrizjuego); //declara mapa 1 y pasa mapa 1 a matriz juego
 	BITMAP *buffer = create_bitmap(960,660);
 	
+	declararFantasmas(fantasmaPos);
 	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	do{
 		tecla = movimientoPacman(matrizjuego, posPacman);
-		fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
-		auxClyde = clydeNaranja(matrizjuego, fantasmaPos, auxClyde);
+		if(ticks>50){
+			auxClyde = clydeNaranja(matrizjuego, fantasmaPos, auxClyde);
+		}
+		if(ticks==50){
+			fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
+		}
+		ticks = muerte(matrizjuego, fantasmaPos, posPacman, ticks);
 		clear(buffer);
 		imprimirMapa(matrizjuego,buffer); //imprime matriz juego
 		printf("\nClyde: %d, %d\n",fantasmaPos[3][0],fantasmaPos[3][1]);
 		blit(buffer,screen,0,0,0,0,960,660);
+		if(ticks<51){
+		ticks++;	
+		}
+		printf("Ticks: %d",ticks);
 	}while(true); //CICLO INFINITO
 
 	//
@@ -218,50 +231,59 @@ int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 	- Tiene que salir de su casa despues de un tiempo, siendo el 1ro.*/
 	int flag=0, random;
 	while(flag!=1){
-		random=3; //rand() % (4-1 + 1);
+		random=rand() % (5-1 + 1);
 		switch(random){
-			case 1:
+			case 1: //ariba
 				if(matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]] != 1){
-					printf("ejecucion Clyde");
-					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
-					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
-					fantasmaPos[3][0]--; //arriba
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux; //aux
+					fantasmaPos[3][0]--;
+					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]]; //aux
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
-					aux = matrizjuego[fantasmaPos[3][0]+1][fantasmaPos[3][1]];
 					flag++;
 				}
 			break;
-			case 2:
-				if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] != 1){
-					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+			case 2: //izquierda
+				if(fantasmaPos[3][1]==0){ //portal izquiero
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					fantasmaPos[3][1] = 29;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+				}
+				else if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] != 1){
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
 					fantasmaPos[3][1]--;
+					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]];
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
-					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]+1];
 					flag++;
 				}
 			break;
-			case 3:
+			case 3: //abajo
 				if(matrizjuego[fantasmaPos[3][0]+1][fantasmaPos[3][1]] != 1){
-					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
 					fantasmaPos[3][0]++;
+					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]];
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
-					aux = matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]];
 					flag++;
 				}
 			break;
-			case 4:
+			case 4: //derecha
+				if(fantasmaPos[3][1]==29){ //portal derecho
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					fantasmaPos[3][1] = 0;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
+				}
 				if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]+1] != 1){
-					//matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
 					fantasmaPos[3][1]++;
+					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]];
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
-					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] = aux;
 					flag++;
 				}
 			break;
 		}
+		printf("\nAux Clyde: %d\n",aux); //debug
 		return aux;
 
 	}
@@ -272,4 +294,36 @@ void fantasmaExit(int matrizjuego[20][30], int fantasmaPos[4][2], int fantasmaFo
 	fantasmaPos[fantasmaForExit][1]=12;
 	matrizjuego[fantasmaPos[fantasmaForExit][0]][fantasmaPos[fantasmaForExit][1]] = 9;
 	matrizjuego[10][14]=4;
+}
+
+int muerte(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int ticks){
+	ticks = muerteIF(matrizjuego, fantasmaPos, posPacman, 3, ticks);
+	return ticks;
+}
+
+int muerteIF(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int fantasma, int ticks){
+	if(fantasmaPos[fantasma][0]==posPacman[0]&&fantasmaPos[fantasma][1]==posPacman[1]){
+		printf("\n------------ Game Over ------------\n"); //temp
+		reinicio(matrizjuego, fantasmaPos, posPacman);
+	}
+	printf("Ejecucion");
+	ticks=0;
+	return ticks;
+}
+
+void reinicio(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2]){
+	cargarmapa1(matrizjuego); //declara mapa 1 y pasa mapa 1 a matriz juego
+	posPacman[0]=14;
+	posPacman[1]=14;
+	fantasmaPos[0][0]=11;
+	fantasmaPos[0][1]=16;
+	fantasmaPos[3][0]=9;
+	fantasmaPos[3][1]=15;
+	
+	//fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
+}
+
+void declararFantasmas(int fantasmaPos[4][2]){
+	fantasmaPos[3][0]=9;
+	fantasmaPos[3][1]=15;
 }
