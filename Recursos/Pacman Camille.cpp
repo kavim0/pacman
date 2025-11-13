@@ -110,23 +110,30 @@ void motordejuego(){
 	declararFantasmas(fantasmaPos);
 	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	do{
-		if(ticks>50){
+		if(ticks>10){
 			auxClyde = clydeNaranja(matrizjuego, fantasmaPos, auxClyde);
 		}
-		if(ticks==50){
+		if(ticks==10){
 			fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
 		}
 		tecla = movimientoPacman(matrizjuego, posPacman);
-		ticks = muerte(matrizjuego, fantasmaPos, posPacman, ticks);
+		
+	
+		
 		clear(buffer);
 		imprimirMapa(matrizjuego,buffer); //imprime matriz juego
 		printf("\nClyde: %d, %d\n",fantasmaPos[3][0],fantasmaPos[3][1]);
 		blit(buffer,screen,0,0,0,0,960,660);
-		if(ticks<51){
+		
 		ticks++;	
-		}
 		printf("Ticks: %d\n",ticks);
 		printf("Aux: %d\n",auxClyde);
+		
+		if(muerte(matrizjuego, fantasmaPos, posPacman, ticks) == 1){
+			ticks = 0;
+			reinicio(matrizjuego,fantasmaPos,posPacman);
+			printf("Hubo reinicio!!");
+		}
 	}while(true); //CICLO INFINITO
 
 	//
@@ -232,7 +239,7 @@ int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 	- Tiene que salir de su casa despues de un tiempo, siendo el 1ro.*/
 	int flag=0, random;
 	while(flag!=1){
-		random=1; //rand() % (5-1 + 1);
+		random= rand() % (5-1 + 1);
 		switch(random){
 			case 1: //ariba
 				if(matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]] != 1){
@@ -303,11 +310,15 @@ void fantasmaExit(int matrizjuego[20][30], int fantasmaPos[4][2], int fantasmaFo
 }
 
 int muerte(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int ticks){
-	ticks = muerteIF(matrizjuego, fantasmaPos, posPacman, 3, ticks);
-	return ticks;
+	//ticks = muerteIF(matrizjuego, fantasmaPos, posPacman, 3, ticks);
+	if(fantasmaPos[3][0]==posPacman[0] && fantasmaPos[3][1] == posPacman[1] ){
+		//printf("Mueres\n");
+		return 1; //MURIÓ!!!
+	}
+	return 0; //NO MURIÓ
 }
 
-int muerteIF(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int fantasma, int ticks){
+/*int muerteIF(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int fantasma, int ticks){
 	if(fantasmaPos[fantasma][0]==posPacman[0]&&fantasmaPos[fantasma][1]==posPacman[1]){
 		printf("\n------------ Game Over ------------\n"); //temp
 		reinicio(matrizjuego, fantasmaPos, posPacman);
@@ -315,19 +326,23 @@ int muerteIF(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], i
 	}
 	printf("Ejecucion");
 	return ticks;
-}
+}*/
 
 void reinicio(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2]){
-	matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]]=4;
+	
+	matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
+	matrizjuego[posPacman[0]][posPacman[1]] = 4;
+	
 	posPacman[0]=14;
 	posPacman[1]=14;
+	
 	fantasmaPos[0][0]=11;
 	fantasmaPos[0][1]=16;
-	fantasmaPos[3][0]=9;
-	fantasmaPos[3][1]=15;
+	fantasmaPos[3][0]=10;
+	fantasmaPos[3][1]=14;
 	
 	matrizjuego[14][14]=0;
-	
+	matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
 	//fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
 }
 
