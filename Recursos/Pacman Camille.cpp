@@ -110,13 +110,13 @@ void motordejuego(){
 	declararFantasmas(fantasmaPos);
 	spawnFruta(matrizjuego); //genera fruta de forma aleatoria
 	do{
+		tecla = movimientoPacman(matrizjuego, posPacman);
 		if(ticks>10){
 			auxClyde = clydeNaranja(matrizjuego, fantasmaPos, auxClyde);
 		}
 		if(ticks==10){
 			fantasmaExit(matrizjuego, fantasmaPos, fantasmaForExit);
 		}
-		tecla = movimientoPacman(matrizjuego, posPacman);
 		
 	
 		
@@ -243,12 +243,7 @@ int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 		switch(random){
 			case 1: //ariba
 				if(matrizjuego[fantasmaPos[3][0]-1][fantasmaPos[3][1]] != 1){
-					if(aux!=0){
 						matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux; //aux
-					}
-					else{
-						matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]]=4;
-					}
 					fantasmaPos[3][0]--;
 					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]]; //aux
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
@@ -256,13 +251,12 @@ int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 				}
 			break;
 			case 2: //izquierda
-				if(fantasmaPos[3][1]==0){ //portal izquiero
+				if(fantasmaPos[3][1]==0){ //portal izquierdo
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					fantasmaPos[3][1] = 29;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
 				}
 				else if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]-1] != 1){
-					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
 					fantasmaPos[3][1]--;
 					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]];
@@ -287,7 +281,6 @@ int clydeNaranja(int matrizjuego[20][30], int fantasmaPos[4][2], int aux){
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 9;
 				}
 				if(matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]+1] != 1){
-					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = 4;
 					matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]] = aux;
 					fantasmaPos[3][1]++;
 					aux = matrizjuego[fantasmaPos[3][0]][fantasmaPos[3][1]];
@@ -312,7 +305,7 @@ void fantasmaExit(int matrizjuego[20][30], int fantasmaPos[4][2], int fantasmaFo
 int muerte(int matrizjuego[20][30], int fantasmaPos[4][2], int posPacman[2], int ticks){
 	//ticks = muerteIF(matrizjuego, fantasmaPos, posPacman, 3, ticks);
 	if(fantasmaPos[3][0]==posPacman[0] && fantasmaPos[3][1] == posPacman[1] ){
-		//printf("Mueres\n");
+		printf("Mueres\n");
 		return 1; //MURIÓ!!!
 	}
 	return 0; //NO MURIÓ
